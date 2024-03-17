@@ -9,3 +9,6 @@ foo()
 \description{
 placeholder
 }
+\examples{
+foo()
+}
