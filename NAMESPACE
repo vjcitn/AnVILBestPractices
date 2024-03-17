@@ -2,5 +2,11 @@
 
 export(foo)
 export(get_hpca)
+export(hpca_app)
 import(SummarizedExperiment)
+import(ggplot2)
+import(shiny)
 importFrom(celldex,HumanPrimaryCellAtlasData)
+importFrom(plotly,ggplotly)
+importFrom(plotly,plotlyOutput)
+importFrom(plotly,renderPlotly)

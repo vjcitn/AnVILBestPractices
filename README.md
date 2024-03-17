@@ -19,10 +19,12 @@ in the future
 component using [AnVILPublish](https://bioconductor.org/packages/AnVILPublish).
     - The README.md should include "badges" to clearly indicate package status
 to individuals visiting the workspace
+    - By using a global https reference to a figure
+in the github repo, images for the Dashboard can be included:
+
+![](https://github.com/vjcitn/AnVILBestPractices/blob/main/hppca.png?raw=true)
 
 - Vignette code will be inserted into the "Analyses" component of
 the workspace by AnVILPublish
 
-Images for the Dashboard can be included
 
-![](https://github.com/vjcitn/AnVILBestPractices/blob/main/hpbox.png?raw=true)
