@@ -22,3 +22,7 @@ to individuals visiting the workspace
 
 - Vignette code will be inserted into the "Analyses" component of
 the workspace by AnVILPublish
+
+Images for the Dashboard can be included
+
+![](https://github.com/vjcitn/AnVILBestPractices/blob/main/hpbox.png?raw=true)
