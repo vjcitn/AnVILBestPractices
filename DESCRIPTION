@@ -16,8 +16,8 @@ Description: This package describes methods for managing interactive
 License: Artistic-2.0
 Encoding: UTF-8
 Depends: R (>= 4.1)
-Suggests: knitr, testthat, BiocStyle
-Imports: SingleCellExperiment, celldex
+Suggests: knitr, testthat, BiocStyle, irlba
+Imports: SummarizedExperiment, celldex
 VignetteBuilder: knitr
 biocViews: Infrastructure
 RoxygenNote: 7.3.1

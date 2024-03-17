@@ -1,12 +1,13 @@
 #' Get a Single Cell Experiment
-#' @importFrom celldex DatabaseImmuneCellExpressionData
-#' @import SingleCellExperiment
+#' @importFrom celldex HumanPrimaryCellAtlasData
+#' @import SummarizedExperiment
 #' @examples
-#' di = get_dice()
-#' table(di$label.main)
+#' hp = get_hpca()
+#" dim(assay(hp))
+#' table(hp$label.main)
 #' @export
-get_dice = function()
-  celldex::DatabaseImmuneCellExpressionData()
+get_hpca = function()
+  celldex::HumanPrimaryCellAtlasData()
 
 #' placeholder
 #' @examples

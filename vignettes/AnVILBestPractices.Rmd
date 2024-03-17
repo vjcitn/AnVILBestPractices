@@ -14,4 +14,25 @@ output:
     toc: yes
 ---
 
-# Placeholder
+# Illustration of analytic workspace
+
+We'll use [celldex](https://bioconductor.org/packages/celldex)
+to examine expression in bulk RNA-seq data from
+human primary cells.  These are used to form signatures
+for the classification of single cell types.
+
+```{r lkcd, message=FALSE}
+library(AnVILBestPractices)
+library(SummarizedExperiment)
+library(irlba)
+hp = get_hpca()
+types = c("B_cell", "iPS_cells", "Tissue_stem_cells", 
+  "Monocyte", "Endothelial_cells", "T_cells", "DC", 
+  "Macrophage")
+hplim = hp[, which(hp$label.main %in% types)]
+pc = prcomp_irlba(t(assay(hplim)), n=10)
+pairs(pc$x[,1:5], col=factor(hplim$label.main), cex=.3,
+   pch=19)
+
+```
+
