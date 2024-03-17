@@ -9,6 +9,11 @@ jobs:
     container:
       image: us.gcr.io/broad-dsp-gcr-public/anvil-rstudio-bioconductor:3.18.0
     steps:
+      - name: Free root space
+        uses: almahmoud/free-root-space@main
+        with:
+          verbose: true
+          
       - uses: actions/checkout@v4
       
       - name: Install package and deps
