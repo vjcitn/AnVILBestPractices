@@ -1,27 +1,44 @@
 name: Container tests
 on:
   workflow_dispatch:
+    inputs:
+      containername:
+        default: "us.gcr.io/broad-dsp-gcr-public/anvil-rstudio-bioconductor:3.18.0"
   push:
 jobs:
   test:
     name: Run unit tests and vignettes
     runs-on: ubuntu-latest
-    container:
-      image: us.gcr.io/broad-dsp-gcr-public/anvil-rstudio-bioconductor:3.18.0
     steps:
+      - name: Free root space
+        uses: almahmoud/free-root-space@main
+        with:
+          verbose: true
+
       - uses: actions/checkout@v4
-      
+
+      - id: defs
+        run: |
+          echo containername=$(echo ${{ github.event.inputs.containername || 'us.gcr.io/broad-dsp-gcr-public/anvil-rstudio-bioconductor:3.18.0' }}) >> $GITHUB_OUTPUT
+
+      - name: Start container
+        id: cont
+        shell: bash
+        run: |
+          CONT_ID=$(docker run -d --user root -v ${{github.workspace}}:${{github.workspace}} -v /tmp:/tmp ${{steps.defs.outputs.containername}} "sleep 21600")
+          echo id=$CONT_ID >> $GITHUB_OUTPUT
+
       - name: Install package and deps
         run: |
           mkdir -p /tmp/.github/logs
-          Rscript -e "options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); BiocManager::install(ask=FALSE); devtools::install('.', dependencies=TRUE, build_vignettes=FALSE, repos = BiocManager::repositories())" | tee /tmp/.github/logs/install.txt
+          docker exec ${{steps.cont.outputs.id}} Rscript -e "options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); BiocManager::install(ask=FALSE); devtools::install('.', dependencies=TRUE, build_vignettes=FALSE, repos = BiocManager::repositories())" | tee /tmp/.github/logs/install.txt
 
       - name: Run unit tests
-        run: Rscript -e 'devtools::test()' | tee /tmp/.github/logs/unit-tests.txt
+        run: docker exec ${{steps.cont.outputs.id}} Rscript -e 'devtools::test()' | tee /tmp/.github/logs/unit-tests.txt
 
       - name: Render vignettes
         run: |
-          Rscript -e 'library(devtools); load_all(); build_vignettes()' | tee /tmp/.github/logs/vignettes.txt
+          docker exec ${{steps.cont.outputs.id}} Rscript -e 'library(devtools); load_all(); build_vignettes()' | tee /tmp/.github/logs/vignettes.txt
           mkdir /tmp/.github/logs/vignettes
           mv doc /tmp/.github/logs/vignettes/doc || true
           mv Meta /tmp/.github/logs/vignettes/Meta || true
@@ -60,9 +77,19 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - id: defs
+        run: |
+          echo containername=$(echo ${{ github.event.inputs.containername || 'us.gcr.io/broad-dsp-gcr-public/anvil-rstudio-bioconductor:3.18.0' }}) >> $GITHUB_OUTPUT
+
       - name: Extract container name without tag
         id: vers
         run: |
+          cat << "EOF" > anvil.Dockerfile
+          FROM ${{steps.defs.outputs.containername}}
+          WORKDIR /home/rstudio
+          COPY --chown=rstudio:rstudio . /home/rstudio/
+          RUN Rscript -e "options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); BiocManager::install(ask=FALSE); devtools::install('.', dependencies=TRUE, build_vignettes=TRUE, repos = BiocManager::repositories())"
+          EOF
           echo basever=$(cat anvil.Dockerfile | head -n 1 | awk -F':' '{print $NF}') >> $GITHUB_OUTPUT
 
       - name: Extract metadata for container image
@@ -180,3 +207,4 @@ jobs:
             git add README.md
             git commit -m "Update badges $(TZ=EST date '+%Y-%m-%d_%H-%M')"
             git push
+
