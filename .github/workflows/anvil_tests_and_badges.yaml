@@ -84,13 +84,13 @@ jobs:
       - name: Extract container name without tag
         id: vers
         run: |
-          cat << "EOF" > anvil.Dockerfile
+          cat << "EOF" > ${{github.workspace}}/anvil.Dockerfile
           FROM ${{steps.defs.outputs.containername}}
           WORKDIR /home/rstudio
           COPY --chown=rstudio:rstudio . /home/rstudio/
           RUN Rscript -e "options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); BiocManager::install(ask=FALSE); devtools::install('.', dependencies=TRUE, build_vignettes=TRUE, repos = BiocManager::repositories())"
           EOF
-          echo basever=$(cat anvil.Dockerfile | head -n 1 | awk -F':' '{print $NF}') >> $GITHUB_OUTPUT
+          echo basever=$(cat ${{github.workspace}}/anvil.Dockerfile | head -n 1 | awk -F':' '{print $NF}') >> $GITHUB_OUTPUT
 
       - name: Extract metadata for container image
         id: meta
@@ -123,6 +123,7 @@ jobs:
           outputs: type=image,name=${{ steps.vars.outputs.container }},push-by-digest=true,name-canonical=true,push=true
           provenance: false
           file: anvil.Dockerfile
+          context: ${{github.workspace}}
 
   badge_job:
     name: Scraping results and adding badges
