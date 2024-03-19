@@ -1,3 +1,7 @@
+library(shiny)
+library(plotly)
+library(ggplot2)
+library(AnVILBestPractices)
 #' interactive use of HumanPrimaryCellAtlasData
 #' @import shiny
 #' @importFrom plotly ggplotly renderPlotly plotlyOutput
@@ -41,18 +45,29 @@ server = function(input, output) {
   output$altdat = renderTable(input$newref)
   output$msg = renderText(sprintf("hpca_app in AnVILBestPractices %s",
     as.character(packageVersion("AnVILBestPractices"))))
-  hp = get_hpca()
-  types = c("B_cell", "iPS_cells", "Tissue_stem_cells", 
-    "Monocyte", "Endothelial_cells", "T_cells", "DC", 
-    "Macrophage")
-  hplim = hp[, which(hp$label.main %in% types)]
-  pc = irlba::prcomp_irlba(t(SummarizedExperiment::assay(hplim)), n=10)
+#  hp = get_hpca()
+  getref = reactive({
+   validate(need(nchar(input$newref$datapath)>0, "waiting for reference selection"))
+   ref = get(load(input$newref$datapath))
+print(ref)
+   min_num_cells = 10
+   ttab = table(ref$label.main)
+   ttabok = ttab[ttab>min_num_cells] 
+   types = names(ttabok)
+   reflim = ref[, which(ref$label.main %in% types)]
+   an = as.numeric
+   pc = irlba::prcomp_irlba(t(SummarizedExperiment::assay(reflim)), n=10)
+   pcdf=data.frame(PCx=pc$x[,an(input$dim1)], PCy=pc$x[,an(input$dim2)], celltype=factor(reflim$label.main))
+   list(reflim=reflim, pcdf=pcdf)
+  })
+#  types = c("B_cell", "iPS_cells", "Tissue_stem_cells", 
+#    "Monocyte", "Endothelial_cells", "T_cells", "DC", 
+#    "Macrophage")
   getdf = reactive({
-     an = as.numeric
-     data.frame(PCx=pc$x[,an(input$dim1)], PCy=pc$x[,an(input$dim2)], celltype=factor(hplim$label.main))
   })
   output$pca = renderPlotly({
-     mydf = getdf()
+     reflist = getref()
+     mydf = reflist$pcdf
      if (input$dim1 != input$dim2) pl = ggplot(mydf, 
             aes(x=PCx, y=PCy, text=celltype, colour=celltype)) + 
             geom_point() + xlab(paste0("PC", input$dim1)) + ylab(paste0("PC", input$dim2))
