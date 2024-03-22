@@ -5,8 +5,10 @@ ingest_h5ad = function(path="/home/vincent/tenx3k.h5ad") {
 
 #' use SingleR to obtain scores and labels of classification of cells in an h5ad
 #' @importFrom SingleR SingleR
+#' @param sce defaults to NULL, can be instance of SingleCellExperiment
 #' @param path character(1) path to h5ad file
 #' @param ref a SummarizedExperiment as managed by celldex
+#' @param ref.type character(1) "label.main" or "label.fine"
 #' @param min.common numeric(1) minimum number of features that
 #' must be found in common between the SingleCellExperiment
 #' to be classified, and the reference.
@@ -27,7 +29,9 @@ ingest_h5ad = function(path="/home/vincent/tenx3k.h5ad") {
 #' @export
 do_SingleR = function(sce=NULL, path="/home/vincent/tenx3k.h5ad", 
     ref=celldex::HumanPrimaryCellAtlasData(), 
+    ref.type = "label.main",
     min.common = 1000, assay.type.test=1L, ...) {
+  stopifnot(ref.type %in% c("label.main", "label.fine"))
   if (is.null(sce)) {
    is_h5ad = length(grep("h5ad$", path)==1)
    is_rda = length(grep("rda$", path)==1)
@@ -40,7 +44,7 @@ do_SingleR = function(sce=NULL, path="/home/vincent/tenx3k.h5ad",
    stopifnot(inherits(sce, "SingleCellExperiment"))
    }
   preds = SingleR(test=sce, 
-    ref=ref, labels=ref$label.main, assay.type.test=assay.type.test,...)
+    ref=ref, labels=ref[[ref.type]], assay.type.test=assay.type.test,...)
   list(input=sce, preds=preds)
 }
 

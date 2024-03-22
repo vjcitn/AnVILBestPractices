@@ -8,15 +8,20 @@ do_SingleR(
   sce = NULL,
   path = "/home/vincent/tenx3k.h5ad",
   ref = celldex::HumanPrimaryCellAtlasData(),
+  ref.type = "label.main",
   min.common = 1000,
   assay.type.test = 1L,
   ...
 )
 }
 \arguments{
+\item{sce}{defaults to NULL, can be instance of SingleCellExperiment}
+
 \item{path}{character(1) path to h5ad file}
 
 \item{ref}{a SummarizedExperiment as managed by celldex}
+
+\item{ref.type}{character(1) "label.main" or "label.fine"}
 
 \item{min.common}{numeric(1) minimum number of features that
 must be found in common between the SingleCellExperiment
@@ -42,6 +47,6 @@ shared between sce and ref
 p3k = TENxPBMCData::TENxPBMCData("pbmc3k")
 rownames(p3k) = make.names(rowData(p3k)$Symbol, unique=TRUE)
 pred3k = do_SingleR(p3k)
-table(pred3k$preds$label.pruned)
+table(pred3k$preds$pruned.labels)
 head(pred3k$preds)
 }

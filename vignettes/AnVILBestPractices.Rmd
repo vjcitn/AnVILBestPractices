@@ -21,11 +21,13 @@ to examine expression in bulk RNA-seq data from
 human primary cells.  These are used to form signatures
 for the classification of single cell types.
 
+First we get an overview of variation in expression
+patterns in a reference dataset using principal components.
 ```{r lkcd, message=FALSE}
 library(AnVILBestPractices)
 library(SummarizedExperiment)
 library(irlba)
-hp = get_hpca()
+hp = celldex::HumanPrimaryCellAtlasData()
 types = c("B_cell", "iPS_cells", "Tissue_stem_cells", 
   "Monocyte", "Endothelial_cells", "T_cells", "DC", 
   "Macrophage")
@@ -36,3 +38,21 @@ pairs(pc$x[,1:5], col=factor(hplim$label.main), cex=.3,
 
 ```
 
+Now we use the reference to classify cells in
+a PBMC dataset, using the SingleR methodology.
+
+```{r doclass, message=FALSE}
+p3k = TENxPBMCData::TENxPBMCData("pbmc3k")
+rownames(p3k) = make.names(rowData(p3k)$Symbol, unique=TRUE)
+p3k = scater::logNormCounts(p3k)
+stats <- scran::modelGeneVar(p3k)
+hvg = scran::getTopHVGs(stats, n=5000)
+pred3k = do_SingleR(p3k[hvg,], BPPARAM=BiocParallel::MulticoreParam())
+head(pred3k$preds)
+```
+
+Check the separability of asserted classes in PCA space:
+```{r dopca}
+pc = prcomp_irlba(t(assay(pred3k$input)), 10)
+pairs(pc$x[,1:5], pch=19, cex=.3, col=factor(pred3k$preds$pruned.labels))
+```

@@ -16,7 +16,8 @@ Description: This package describes methods for managing interactive
 License: Artistic-2.0
 Encoding: UTF-8
 Depends: R (>= 4.1)
-Suggests: knitr, testthat, BiocStyle, irlba
+Suggests: knitr, testthat, BiocStyle, irlba, scater, scran,
+	TENxPBMCData, BiocParallel
 Imports: SummarizedExperiment, celldex, shiny, plotly, ggplot2,
 	SingleR
 VignetteBuilder: knitr
