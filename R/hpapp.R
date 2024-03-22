@@ -1,6 +1,8 @@
 #' interactive use of HumanPrimaryCellAtlasData
-#' @import shiny
+#' @rawNamespace import(shiny, except=c(dataTableOutput, renderDataTable))
 #' @import celldex
+#' @import shinytoastr
+#' @import DT
 #' @importFrom plotly ggplotly renderPlotly plotlyOutput
 #' @import ggplot2
 #' @examples
@@ -10,6 +12,7 @@ hpca_app = function() {
  refs = grep("Data$", ls(asNamespace("celldex")), value=TRUE)
  options(shiny.maxRequestSize = 50 * 1024^2)
  ui = fluidPage(
+  useToastr(),
   sidebarLayout(
    sidebarPanel(
     textOutput("msg"),
@@ -24,11 +27,12 @@ hpca_app = function() {
     radioButtons("dim2", "PC for y", choices=1:4, selected=2, inline=TRUE), width=3),
    mainPanel(
     tabsetPanel(
-     tabPanel("main", 
+     tabPanel("PCA:ref", 
       plotlyOutput("pca")
       ),
      tabPanel("about",
       tableOutput("newdatmeta"),
+      DT::dataTableOutput("sout"),
       helpText("AnVILBestPractices is a Bioconductor package
 that reviews approaches to managing analytic software for
 NHGRI AnVIL"),
@@ -42,7 +46,16 @@ how shiny might be used in an AnVIL workspace")
 
 server = function(input, output) {
   output$newdatmeta = renderTable(input$newdat)
-  
+  output$sout = DT::renderDataTable({
+    as.data.frame(singrun()$preds)
+    })
+  singrun = reactive({
+   validate(need(nchar(input$newdat$datapath)>0, "waiting for data selection"))
+   toastr_info("starting SingleR")
+   sout = do_SingleR(path=input$newdat$datapath[1])
+   toastr_info("done")
+   sout
+   })
   output$msg = renderText(sprintf("hpca_app in AnVILBestPractices %s",
     as.character(packageVersion("AnVILBestPractices"))))
   getref = reactive({

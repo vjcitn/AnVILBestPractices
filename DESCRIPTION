@@ -19,7 +19,7 @@ Depends: R (>= 4.1)
 Suggests: knitr, testthat, BiocStyle, irlba, scater, scran,
 	TENxPBMCData, BiocParallel
 Imports: SummarizedExperiment, celldex, shiny, plotly, ggplot2,
-	SingleR
+	SingleR, shinytoastr, DT
 VignetteBuilder: knitr
 biocViews: Infrastructure
 RoxygenNote: 7.3.1

@@ -2,9 +2,11 @@
 
 export(do_SingleR)
 export(hpca_app)
+import(DT)
 import(celldex)
 import(ggplot2)
-import(shiny)
+import(shiny, except=c(dataTableOutput, renderDataTable))
+import(shinytoastr)
 importFrom(SingleR,SingleR)
 importFrom(plotly,ggplotly)
 importFrom(plotly,plotlyOutput)
