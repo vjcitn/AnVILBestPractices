@@ -1,4 +1,5 @@
 library(shiny)
+library(celldex)
 library(plotly)
 library(ggplot2)
 library(AnVILBestPractices)
@@ -10,14 +11,16 @@ library(AnVILBestPractices)
 #' if (interactive()) hpca_app()
 #' @export
 hpca_app = function() {
+ refs = grep("Data$", ls("package:celldex"), value=TRUE)
  options(shiny.maxRequestSize = 50 * 1024^2)
  ui = fluidPage(
   sidebarLayout(
    sidebarPanel(
     textOutput("msg"),
-    helpText("Data source is HumanPrimaryCellAtlasData from Bioconductor celldex package"),
-    helpText("Alternative reference data:"),
-    fileInput("newref", "altref", buttonLabel="altref", multiple=FALSE),
+    helpText("Data source from celldex:"),
+    radioButtons("ref", "ref", choices=refs, selected="HumanPrimaryCellAtlasData"),
+#    helpText("Alternative reference data:"),
+#    fileInput("newref", "altref", buttonLabel="altref", multiple=FALSE),
     helpText("Select PCs for plotting"),
     helpText("Hover over points for info"),
     helpText("If PCs are identical, boxplots are used for the selected component"),
@@ -47,9 +50,10 @@ server = function(input, output) {
     as.character(packageVersion("AnVILBestPractices"))))
 #  hp = get_hpca()
   getref = reactive({
-   validate(need(nchar(input$newref$datapath)>0, "waiting for reference selection"))
-   ref = get(load(input$newref$datapath))
-print(ref)
+#   validate(need(nchar(input$newref$datapath)>0, "waiting for reference selection"))
+#   ref = get(load(input$newref$datapath))
+#print(ref)
+   ref = get(input$ref)() # input$ref is name of function in celldex, which we call
    min_num_cells = 10
    ttab = table(ref$label.main)
    ttabok = ttab[ttab>min_num_cells] 
