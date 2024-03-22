@@ -1,8 +1,3 @@
-#library(shiny)
-#library(celldex)
-#library(plotly)
-#library(ggplot2)
-#library(AnVILBestPractices)
 #' interactive use of HumanPrimaryCellAtlasData
 #' @import shiny
 #' @import celldex
@@ -20,8 +15,8 @@ hpca_app = function() {
     textOutput("msg"),
     helpText("Data source from celldex:"),
     radioButtons("ref", "ref", choices=refs, selected="HumanPrimaryCellAtlasData"),
-#    helpText("Alternative reference data:"),
-#    fileInput("newref", "altref", buttonLabel="altref", multiple=FALSE),
+    helpText("sc-RNA-seq dataset to classify:"),
+    fileInput("newdat", NULL, buttonLabel="newdat", multiple=FALSE),
     helpText("Select PCs for plotting"),
     helpText("Hover over points for info"),
     helpText("If PCs are identical, boxplots are used for the selected component"),
@@ -33,7 +28,7 @@ hpca_app = function() {
       plotlyOutput("pca")
       ),
      tabPanel("about",
-      tableOutput("altdat"),
+      tableOutput("newdatmeta"),
       helpText("AnVILBestPractices is a Bioconductor package
 that reviews approaches to managing analytic software for
 NHGRI AnVIL"),
@@ -46,10 +41,10 @@ how shiny might be used in an AnVIL workspace")
  )
 
 server = function(input, output) {
-  output$altdat = renderTable(input$newref)
+  output$newdatmeta = renderTable(input$newdat)
+  
   output$msg = renderText(sprintf("hpca_app in AnVILBestPractices %s",
     as.character(packageVersion("AnVILBestPractices"))))
-#  hp = get_hpca()
   getref = reactive({
 #   validate(need(nchar(input$newref$datapath)>0, "waiting for reference selection"))
 #   ref = get(load(input$newref$datapath))
