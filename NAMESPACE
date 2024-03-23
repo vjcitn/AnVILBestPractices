@@ -3,6 +3,8 @@
 export(do_SingleR)
 export(hpca_app)
 import(DT)
+import(S4Vectors)
+import(SummarizedExperiment)
 import(celldex)
 import(ggplot2)
 import(shiny, except=c(dataTableOutput, renderDataTable))

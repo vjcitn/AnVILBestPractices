@@ -30,6 +30,7 @@ hpca_app = function() {
      tabPanel("PCA:ref", 
       plotlyOutput("pca")
       ),
+     tabPanel("newdat", plotOutput("finplot")),
      tabPanel("about",
       tableOutput("newdatmeta"),
       DT::dataTableOutput("sout"),
@@ -47,15 +48,20 @@ how shiny might be used in an AnVIL workspace")
 server = function(input, output) {
   output$newdatmeta = renderTable(input$newdat)
   output$sout = DT::renderDataTable({
-    as.data.frame(singrun()$preds)
+    as.data.frame(singrun()$table$preds)
     })
   singrun = reactive({
    validate(need(nchar(input$newdat$datapath)>0, "waiting for data selection"))
    toastr_info("starting SingleR")
    sout = do_SingleR(path=input$newdat$datapath[1])
+   toastr_info("starting projection")
+   vout = viz_pca(sout) # sce
    toastr_info("done")
-   sout
+   list(table=sout, viz=vout)
    })
+  output$finplot = renderPlot({
+    singrun()$viz
+    })
   output$msg = renderText(sprintf("hpca_app in AnVILBestPractices %s",
     as.character(packageVersion("AnVILBestPractices"))))
   getref = reactive({
@@ -94,3 +100,19 @@ runApp( list(ui=ui, server=server) )
 
 
    
+#' @import S4Vectors
+#' @import SummarizedExperiment
+viz_pca = function(pred) {
+ sce = pred$input
+ is_sparse = inherits(SummarizedExperiment::assay(sce), "dgCMatrix")
+ if (is_sparse) {
+    assay(sce, "counts", withDimnames=FALSE) = 
+        as.matrix(assay(sce))  # can't do PCA on dgCMatrix?
+    }
+ sce = scater::logNormCounts(sce)
+ sce2 = BiocSingular::runPCA(sce, 
+    BSPARAM=BiocSingular::IrlbaParam(), 
+    BPPARAM=BiocParallel::MulticoreParam())
+ sce2$pruned.labels = pred$preds$pruned.labels
+ scater::plotPCA(sce2, color_by="pruned.labels")
+}
