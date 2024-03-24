@@ -1,4 +1,7 @@
 
+#' ingestion and conversion
+#' @param path character(1) relative path to h5ad file
+#' @importFrom zellkonverter readH5AD
 ingest_h5ad = function(path="/home/vincent/tenx3k.h5ad") {
   zellkonverter::readH5AD(path)
 }
