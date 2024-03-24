@@ -36,6 +36,7 @@ hpca_app = function() {
       ),
      tabPanel("newdats", 
       helpText("Allow up to a minute for 5000 cells..."),
+      downloadButton("downloadData", "Download [when table appears]"),
       shinycssloaders::withSpinner(
         DT::dataTableOutput("sout")
        )
@@ -73,6 +74,17 @@ server = function(input, output, session) {
   output$finplot = renderPlot({
     singrun()$viz
     })
+
+
+       output$downloadData <- downloadHandler(
+         filename = function() {
+           # Use the selected dataset as the suggested file name
+           paste0(basename(tempfile()), ".csv")
+         },
+         content = function(file) {
+           # Write the dataset to the `file` that will be downloaded
+           write.csv(S4Vectors::as.data.frame(singrun()$table$preds), file)
+         })
   output$msg = renderText(sprintf("hpca_app in AnVILBestPractices %s",
     as.character(packageVersion("AnVILBestPractices"))))
   getref = reactive({
