@@ -33,10 +33,12 @@ hpca_app = function() {
      tabPanel("PCA:ref", 
       plotlyOutput("pca")
       ),
-     tabPanel("newdats", plotOutput("finplot")),
+     tabPanel("newdats", 
+      helpText("Allow up to a minute for 5000 cells..."),
+#      tableOutput("newdatmeta"),
+      DT::dataTableOutput("sout")
+      ),
      tabPanel("about",
-      tableOutput("newdatmeta"),
-      DT::dataTableOutput("sout"),
       helpText("AnVILBestPractices is a Bioconductor package
 that reviews approaches to managing analytic software for
 NHGRI AnVIL"),
@@ -53,17 +55,18 @@ server = function(input, output, session) {
   shinyFileChoose(input, "newdat", roots=vols)
 #  output$newdatmeta = renderTable(input$newdat)
   output$sout = DT::renderDataTable({
-    as.data.frame(singrun()$table$preds)
+    ss = singrun()
+    as.data.frame(ss$table$preds)
     })
   singrun = reactive({
    validate(need(!is.integer(input$newdat),"waiting for file"))
    fp = shinyFiles::parseFilePaths(vols, input$newdat)
    toastr_info("starting SingleR")
    sout = do_SingleR(path=fp$datapath)
-   toastr_info("starting projection")
-   vout = viz_pca(sout) # sce
-   toastr_info("done")
-   list(table=sout, viz=vout)
+#   toastr_info("starting projection")
+#   vout = viz_pca(sout) # sce
+#   toastr_info("done")
+   list(table=sout) #, viz=vout)
    })
   output$finplot = renderPlot({
     singrun()$viz
