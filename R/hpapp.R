@@ -3,6 +3,7 @@
 #' @import celldex
 #' @import shinytoastr
 #' @import shinyFiles
+#' @import shinycssloaders
 #' @import DT
 #' @importFrom plotly ggplotly renderPlotly plotlyOutput
 #' @import ggplot2
@@ -35,8 +36,9 @@ hpca_app = function() {
       ),
      tabPanel("newdats", 
       helpText("Allow up to a minute for 5000 cells..."),
-#      tableOutput("newdatmeta"),
-      DT::dataTableOutput("sout")
+      shinycssloaders::withSpinner(
+        DT::dataTableOutput("sout")
+       )
       ),
      tabPanel("about",
       helpText("AnVILBestPractices is a Bioconductor package

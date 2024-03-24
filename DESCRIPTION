@@ -1,7 +1,7 @@
 Package: AnVILBestPractices
 Date: 2022-10-01
 Title: Describe methods for managing interactive analysis resources in AnVIL
-Version: 0.0.5
+Version: 0.0.6
 Authors@R: 
     c(person(
         "Vincent", "Carey", role = c("aut", "cre"),
@@ -20,7 +20,7 @@ Suggests: knitr, testthat, BiocStyle, irlba, scater, scran,
 	TENxPBMCData, BiocParallel
 Imports: SummarizedExperiment, celldex, shiny, plotly, ggplot2,
 	SingleR, shinytoastr, DT, S4Vectors, zellkonverter,
-	shinyFiles
+	shinyFiles, shinycssloaders
 VignetteBuilder: knitr
 biocViews: Infrastructure
 RoxygenNote: 7.3.1
