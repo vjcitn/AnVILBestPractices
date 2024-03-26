@@ -11,6 +11,7 @@ do_SingleR(
   ref.type = "label.main",
   min.common = 1000,
   assay.type.test = 1L,
+  clprocid = NULL,
   ...
 )
 }
@@ -30,6 +31,10 @@ to be classified, and the reference.}
 \item{assay.type.test}{numeric(1) defaults to 1, index into assays() of
 SingleCellExperiment, see Note}
 
+\item{clprocid}{defaults to NULL; if non-null, should be an
+instance of the Rcollectl_process R6 class defined in Rcollectl.
+`clprocid$process$is_alive()` should be TRUE}
+
 \item{\dots}{passed to SingleR::SingleR}
 }
 \description{
@@ -42,11 +47,34 @@ object is ingested and must inherit from SingleCellExperiment.
 
 Error is thrown if there are fewer than `min.common` features
 shared between sce and ref
+
+On Linux systems, the output of `Rcollectl::start()`
+can be passed for collection of CPU and memory usage statistics.
+After the run, use `cl_stop(...)` to use methods from Rcollectl
+to retrieve and visualize statistics.
 }
 \examples{
-p3k = TENxPBMCData::TENxPBMCData("pbmc3k")
-rownames(p3k) = make.names(rowData(p3k)$Symbol, unique=TRUE)
-pred3k = do_SingleR(p3k)
-table(pred3k$preds$pruned.labels)
-head(pred3k$preds)
+if (requireNamespace("Rcollectl")) {
+  clid = Rcollectl::cl_start()
+  Rcollectl::cl_timestamp(clid, "pre-data")
+  p3k = TENxPBMCData::TENxPBMCData("pbmc3k")
+  Rcollectl::cl_timestamp(clid, "3k loaded")
+  rownames(p3k) = make.names(rowData(p3k)$Symbol, unique=TRUE)
+  bpp = BiocParallel::MulticoreParam()
+  pred3k = do_SingleR(p3k, clprocid=clid, BPPARAM=bpp)
+  table(pred3k$preds$pruned.labels)
+  head(pred3k$preds)
+  Rcollectl::cl_stop(clid)
+  Sys.sleep(2) # needed for collectl serialization
+  path = Rcollectl::cl_result_path(clid)
+  Rcollectl::plot_usage(Rcollectl::cl_parse(path)) +
+      Rcollectl::cl_timestamp_layer(path) +
+      Rcollectl::cl_timestamp_label(path) +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust=1))
+} else {
+  p3k = TENxPBMCData::TENxPBMCData("pbmc3k")
+  rownames(p3k) = make.names(rowData(p3k)$Symbol, unique=TRUE)
+  pred3k = do_SingleR(p3k, clprocid=clid)
+  head(pred3k$preds) 
+}
 }
