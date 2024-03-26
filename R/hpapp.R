@@ -7,10 +7,11 @@
 #' @import DT
 #' @importFrom plotly ggplotly renderPlotly plotlyOutput
 #' @import ggplot2
+#' @param \dots passed to `do_SingleR`
 #' @examples
 #' if (interactive()) hpca_app()
 #' @export
-hpca_app = function() {
+hpca_app = function(...) {
  refs = grep("Data$", ls(asNamespace("celldex")), value=TRUE)
  options(shiny.maxRequestSize = 50 * 1024^2)
  ui = fluidPage(
@@ -41,6 +42,7 @@ hpca_app = function() {
         DT::dataTableOutput("sout")
        )
       ),
+     tabPanel("instr", plotOutput("instr")),
      tabPanel("about",
       helpText("AnVILBestPractices is a Bioconductor package
 that reviews approaches to managing analytic software for
@@ -57,19 +59,19 @@ server = function(input, output, session) {
   vols = c(Home=fs::path_home())
   shinyFileChoose(input, "newdat", roots=vols)
 #  output$newdatmeta = renderTable(input$newdat)
+  output$instr = renderPlot({
+    Rcollectl::plot_usage( singrun()$clans )
+    })
   output$sout = DT::renderDataTable({
     ss = singrun()
-    as.data.frame(ss$table$preds)
+    as.data.frame(ss$preds)
     })
   singrun = reactive({
    validate(need(!is.integer(input$newdat),"waiting for file"))
    fp = shinyFiles::parseFilePaths(vols, input$newdat)
    toastr_info("starting SingleR")
-   sout = do_SingleR(path=fp$datapath)
-#   toastr_info("starting projection")
-#   vout = viz_pca(sout) # sce
-#   toastr_info("done")
-   list(table=sout) #, viz=vout)
+   clid = Rcollectl::cl_start() # will be stopped in do_SingleR
+   do_SingleR(path=fp$datapath, clprocid=clid, ...)
    })
   output$finplot = renderPlot({
     singrun()$viz
@@ -83,7 +85,7 @@ server = function(input, output, session) {
          },
          content = function(file) {
            # Write the dataset to the `file` that will be downloaded
-           write.csv(S4Vectors::as.data.frame(singrun()$table$preds), file)
+           write.csv(S4Vectors::as.data.frame(singrun()$preds), file)
          })
   output$msg = renderText(sprintf("hpca_app in AnVILBestPractices %s",
     as.character(packageVersion("AnVILBestPractices"))))

@@ -4,7 +4,10 @@
 \alias{hpca_app}
 \title{interactive use of HumanPrimaryCellAtlasData}
 \usage{
-hpca_app()
+hpca_app(...)
+}
+\arguments{
+\item{\dots}{passed to `do_SingleR`}
 }
 \description{
 interactive use of HumanPrimaryCellAtlasData
