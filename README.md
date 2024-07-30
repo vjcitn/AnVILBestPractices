@@ -1,3 +1,5 @@
+![date.svg](https://raw.githubusercontent.com/almahmoud/AnVILBestPractices/main/.github/badges/date.svg)
+[![anvil-container.svg](https://raw.githubusercontent.com/almahmoud/AnVILBestPractices/main/.github/badges/anvil-container.svg)](https://github.com/almahmoud/AnVILBestPractices/pkgs/container/AnVILBestPractices)
 # AnVILBestPractices for workspaces involved with interactive analysis in AnVIL
 
 - The workspace code and documentation is managed in a github repository
